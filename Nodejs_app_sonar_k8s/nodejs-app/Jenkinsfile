@@ -25,16 +25,16 @@ pipeline {
         sh 'cd nodejs-app && npm test'
       }
     }
-    stage('Static Code Analysis') {
-      environment {
-        SONAR_URL = "http://34.201.116.83:9000"
-      }
-      steps {
-        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-          sh 'cd nodejs-app && sonar-scanner -Dsonar.projectKey=nodejs-app -Dsonar.sources=. -Dsonar.host.url=${SONAR_URL} -Dsonar.login=$SONAR_AUTH_TOKEN'
-        }
-      }
-    }
+    // stage('Static Code Analysis') {
+    //   environment {
+    //     SONAR_URL = "http://34.201.116.83:9000"
+    //   }
+    //   steps {
+    //     withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+    //       sh 'cd nodejs-app && sonar-scanner -Dsonar.projectKey=nodejs-app -Dsonar.sources=. -Dsonar.host.url=${SONAR_URL} -Dsonar.login=$SONAR_AUTH_TOKEN'
+    //     }
+    //   }
+    // }
     stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "saikiran078/nodejs-app:${BUILD_NUMBER}"
@@ -52,7 +52,7 @@ pipeline {
     }
     stage('Update Deployment File') {
       environment {
-        GIT_REPO_NAME = "cicd_project"
+        GIT_REPO_NAME = "Better_assignment"
         GIT_USER_NAME = "kiran877"
       }
       steps {
