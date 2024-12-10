@@ -5,6 +5,9 @@ pipeline {
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // Mount Docker socket to access the host's Docker daemon
     }
   }
+  environment {
+    SLACK_CREDENTIALS = credentials('slack-credentials') // Slack webhook credentials ID
+  }
   stages {
     stage('Checkout') {
       steps {
@@ -25,16 +28,6 @@ pipeline {
         sh 'cd nodejs-app && npm test'
       }
     }
-    // stage('Static Code Analysis') {
-    //   environment {
-    //     SONAR_URL = "http://34.201.116.83:9000"
-    //   }
-    //   steps {
-    //     withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-    //       sh 'cd nodejs-app && sonar-scanner -Dsonar.projectKey=nodejs-app -Dsonar.sources=. -Dsonar.host.url=${SONAR_URL} -Dsonar.login=$SONAR_AUTH_TOKEN'
-    //     }
-    //   }
-    // }
     stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "saikiran078/nodejs-app:${BUILD_NUMBER}"
@@ -67,6 +60,18 @@ pipeline {
               git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
           '''
         }
+      }
+    }
+  }
+  post {
+    success {
+      script {
+        slackSend channel: '#general', color: 'good', message: "Build SUCCESSFUL! Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'."
+      }
+    }
+    failure {
+      script {
+        slackSend channel: '#general', color: 'danger', message: "Build FAILED! Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'."
       }
     }
   }
